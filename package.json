@@ -1,0 +1,37 @@
+{
+  "name": "cimpress-translations-webpack-plugin",
+  "version": "1.0.0",
+  "description": "Effortless webpack integration with Cimpress Translations Service",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Cimpress/cimpress-translations-webpack-plugin.git"
+  },
+  "keywords": [
+    "cimpress",
+    "translations",
+    "webpack",
+    "plugin",
+    "locale",
+    "i18n",
+    "l12y",
+    "10n",
+    "live",
+    "hot"
+  ],
+  "author": "Igor Sowinski <isowinski@cimpress.com, igor@sowinski.blue>",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/Cimpress/cimpress-translations-webpack-plugin/issues"
+  },
+  "homepage": "https://github.com/Cimpress/cimpress-translations-webpack-plugin#readme",
+  "dependencies": {
+    "aws-sdk": "^2.238.1",
+    "cimpress-translations": "^2.0.0",
+    "mkdirp": "^0.5.1",
+    "winston": "^3.0.0-rc5"
+  }
+}
