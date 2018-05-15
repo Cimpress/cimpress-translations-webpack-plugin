@@ -109,7 +109,7 @@ class CimpressTranslationsWebpackPlugin {
 
   apply(compiler) {
     let that = this;
-    compiler.plugin("watch-run", function (compiler, callback) {
+    compiler.plugin("run", function (compiler, callback) {
       that.translationsPromise = that.getTranslations();
       callback();
     });
@@ -122,7 +122,6 @@ class CimpressTranslationsWebpackPlugin {
           if (!requestPath.match(that.path) || that.complete) {
             return callback(null, data);
           }
-          console.log("Got it");
 
           await that.saveTranslations();
           that.complete = true;
