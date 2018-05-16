@@ -16,10 +16,10 @@ class kmsClientIdAuthorizer {
   }
 
   async init() {
-    let params = { CiphertextBlob: new Buffer(encryptedClientSecret, "base64") };
+    let params = { CiphertextBlob: new Buffer(this.encryptedClientSecret, "base64") };
     let data = await KMS.decrypt(params).promise();
 
-    this.authenticator = new Auth0Authenticator("cimpress.auth0.com", clientId, data.Plaintext.toString());
+    this.authenticator = new Auth0Authenticator("cimpress.auth0.com", this.clientId, data.Plaintext.toString());
   }
 
   static isTokenExpired(token) {
@@ -29,7 +29,7 @@ class kmsClientIdAuthorizer {
 
   async getAccessToken() {
     if (!this.token || kmsClientIdAuthorizer.isTokenExpired(this.token)) {
-      this.token = this._getNewAccessToken();
+      this.token = await this._getNewAccessToken();
     }
 
     return this.token;
@@ -37,10 +37,10 @@ class kmsClientIdAuthorizer {
 
   async _getNewAccessToken() {
     if (!this.authenticator) {
-      await init();
+      await this.init();
     }
 
-    return this.authenticator.getAuthorization();
+    return await this.authenticator.getAuthorization();
   }
 }
 

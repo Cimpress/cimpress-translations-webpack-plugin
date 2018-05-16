@@ -3,134 +3,92 @@
 const fs = require("fs");
 const path = require("path");
 const mkdirp = require("mkdirp");
-
 const winston = require("winston");
+
 const { CimpressTranslationsClient } = require("cimpress-translations");
-const AWS = require("aws-sdk");
-const KMS = new AWS.KMS();
+const PluginCore = require("./core");
+const DevServer = require("./devServer");
 
-// const Auth0Authenticator = require("./src/auth0Authenticator");
-const Auth0Authenticator = {};
+const Auth0Authenticator = require("./auth0Authenticator");
 
-const PLUGIN_NAME = "cimpress-translations-webpack-plugin";
+const LOG_HEADER = "cimpress-translations-webpack-plugin";
 
-let buildTranslationsClient = async (clientId, encryptedClientSecret) => {
-  let params = { CiphertextBlob: new Buffer(encryptedClientSecret, "base64") };
-  let data = await KMS.decrypt(params).promise();
-
-  let authenticator = new Auth0Authenticator("cimpress.auth0.com", clientId, data.Plaintext.toString());
-
-  return new CimpressTranslationsClient(null, () => authenticator.getAuthorization());
+const modes = {
+  build: "build",
+  watch: "watch"
 };
 
 class CimpressTranslationsWebpackPlugin {
   constructor(options) {
-    this.serviceId = options.serviceId;
-    this.languages = options.languages;
+    this.pluginCore = new PluginCore(options);
     this.path = options.path;
-    this.verbose = typeof options.verbose === "undefined" ? true : options.verbose;
-
-    this.clientId = options.clientId;
-    this.encryptedClientSecret = options.encryptedClientSecret;
 
     this.logger = winston.createLogger({
       level: this.verbose ? "info" : "error",
       format: winston.format.combine(
         winston.format.colorize(),
-        winston.format.printf(info => `[${PLUGIN_NAME}] ${info.level}: ${info.message}`)
+        winston.format.printf(info => `[${LOG_HEADER}] ${info.level}: ${info.message}`)
       ),
-      transports: [ new winston.transports.Console() ]
+      transports: [new winston.transports.Console()]
     });
 
-    this.translationsClient = null;
-    this.translationsPromise = null;
-
-    this.complete = false;
+    this.buildTimeUpdatePromise = null;
+    this.buildTimeUpdateComplete = false;
+    this.mode = null;
+    this.devServer = null;
   }
 
-  async saveTranslations() {
-    let translations = await this.translationsPromise;
-    this.logger.info("Updating translations...");
-
-    if (!path.extname(this.path)) {
-      return this.saveToDirectory(translations);
+  run(mode, compiler, callback) {
+    if (!this.buildTimeUpdateComplete) {
+      this.buildTimeUpdatePromise = this.pluginCore.updateTranslationsFromService();
+      this.mode = mode;
     }
-
-    this.saveToFile(translations);
+    callback();
   }
 
-  saveToFile(translations) {
-    mkdirp.sync(path.dirname(this.path));
-
-    let all = {};
-    translations.map(t => {
-      all[t.blobId] = t.data;
-    });
-    fs.writeFileSync(this.path, JSON.stringify(all, null, 2));
+  eventRun(compiler, callback) {
+    return this.run(modes.build, compiler, callback);
   }
 
-  saveToDirectory(translations) {
-    mkdirp.sync(this.path);
-
-    translations.map(t => {
-      fs.writeFileSync(path.join(this.path, `${t.blobId}.json`), JSON.stringify(t.data, null, 2));
-    });
+  eventRunDev(compiler, callback) {
+    return this.run(modes.watch, compiler, callback);
   }
 
-  async getTranslations() {
-    let client = await this.getTranslationsClient();
-
-    if (!this.languages) {
-      this.logger.warn("The plugin will look up available languages. Consider setting options.languages to cut down on execution time.");
-      let serviceDescription = await client.describeService(this.serviceId);
-      this.languages = serviceDescription.languages
-        .map(l => l.blobId);
-    }
-
-    this.logger.info("Retrieving language blobs...");
-    let languageBlobPromises = this.languages
-      .map(l => client.getLanguageBlob(this.serviceId, l));
-
-    return Promise.all(languageBlobPromises)
-      .then(languageBlobs => {
-        this.logger.info(`Retrieved languages: ${languageBlobs.map(b => b.blobId)}`);
-        return languageBlobs;
+  eventDone() {
+    if (this.mode === modes.watch && !this.devServer) {
+      this.logger.info("Starting development server...");
+      this.devServer = new DevServer(this.pluginCore, {
+        verbose: this.verbose
       });
+      this.devServer.start();
+    }
   }
 
-  async getTranslationsClient() {
-    this.logger.info("Provisioning a Cimpress Translations client...");
-    if (!this.translationsClient) {
-      this.logger.info("Creating a new Cimpress Translations client...");
-      this.translationsClient = await buildTranslationsClient(this.clientId, this.encryptedClientSecret);
+  matchPath(requestPath) {
+    let expectedPathWithoutExtension = path.join(path.dirname(this.path), path.basename(this.path, path.extname(this.path)));
+    return requestPath.match(expectedPathWithoutExtension) ? true : false;
+  }
+
+  async eventInterceptResolve(data, callback) {
+    let requestPath = path.join(data.context, data.request);
+    if (!this.matchPath(requestPath) || this.buildTimeUpdateComplete) {
+      return callback(null, data);
     }
 
-    return this.translationsClient;
+    await this.buildTimeUpdatePromise;
+    this.buildTimeUpdateComplete = true;
+    callback(null, data);
   }
 
   apply(compiler) {
-    let that = this;
-    compiler.plugin("watch-run", function (compiler, callback) {
-      that.translationsPromise = that.getTranslations();
-      callback();
+    compiler.plugin("run", this.eventRun.bind(this));
+    compiler.plugin("watch-run", this.eventRunDev.bind(this));
+
+    compiler.plugin("normal-module-factory", (nmf) => {
+      nmf.plugin("before-resolve", this.eventInterceptResolve.bind(this));
     });
 
-    compiler.plugin("normal-module-factory", async function(nmf) {
-      if (that.translationsPromise) {
-        nmf.plugin("before-resolve", async (data, callback) => {
-
-          let requestPath = path.join(data.context, data.request);
-          if (!requestPath.match(that.path) || that.complete) {
-            return callback(null, data);
-          }
-          console.log("Got it");
-
-          await that.saveTranslations();
-          that.complete = true;
-          callback(null, data);
-        });
-      }
-    });
+    compiler.plugin("done", this.eventDone.bind(this));
   }
 }
 

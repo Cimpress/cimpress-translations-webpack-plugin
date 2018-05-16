@@ -13,37 +13,31 @@ class Auth0Authenticator {
     return `https://${this.domain}`;
   }
 
-  getAccessTokenUsingRefreshToken() {
-    return new Promise((resolve, reject) => {
-      let options = {
-        method: "POST",
-        uri: `${this.url}/oauth/token`,
-        body: {
-          client_id: this.clientId,
-          client_secret: this.clientSecret,
-          audience: "https://api.cimpress.io/",
-          grant_type: "client_credentials"
-        },
-        json: true
-      };
-      rp(options)
-        .then(parsedBody => {
-          let authorization = `${parsedBody.token_type} ${parsedBody.access_token}`;
-          this.authorization = authorization;
-          resolve(authorization);
-        })
-        .catch(reject);
-    });
+  async getAccessTokenUsingRefreshToken() {
+    let options = {
+      method: "POST",
+      uri: `${this.url}/oauth/token`,
+      body: {
+        client_id: this.clientId,
+        client_secret: this.clientSecret,
+        audience: "https://api.cimpress.io/",
+        grant_type: "client_credentials"
+      },
+      json: true
+    };
+
+    let parsedBody = await rp(options);
+    let authorization = parsedBody.access_token;
+    this.authorization = authorization;
+    return authorization;
   }
 
-  getAuthorization() {
-    return new Promise(resolve => {
-      if (this.authorization) {
-        return resolve(this.authorization);
-      } else {
-        this.getAccessTokenUsingRefreshToken().then(resolve);
-      }
-    });
+  async getAuthorization() {
+    if (this.authorization) {
+      return this.authorization;
+    }
+
+    return await this.getAccessTokenUsingRefreshToken();
   }
 }
 

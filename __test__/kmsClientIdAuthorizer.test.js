@@ -1,36 +1,32 @@
 "use strict";
 
 const assert = require("assert");
-const proxyquire = require("proxyquire");
-const sinon = require("sinon");
 const jwt = require("jsonwebtoken");
 
 const paths = {
   kmsClientIdAuthorizer: "../src/kmsClientIdAuthorizer"
 };
 
-const spies = {
-  kmsDecrypt: sinon.spy(),
-  authorize: sinon.spy()
+const functionMocks = {
+  kmsDecrypt: jest.fn(),
+  authorize: jest.fn()
 };
 
 const mockAws = {
-  AWS: {
-    KMS: function() {
-      this.decrypt = spies.kmsDecrypt;
-    }
+  KMS: function() {
+    this.decrypt = functionMocks.kmsDecrypt;
   }
 };
 
-const kmsClientIdAuthorizer = proxyquire(paths.kmsClientIdAuthorizer, {
-  "aws-sdk": mockAws
-});
+jest.mock("aws-sdk", () => mockAws);
+
+const kmsClientIdAuthorizer = require(paths.kmsClientIdAuthorizer);
 
 const testKmsDecryptResponse = null;
 const testAuthorizationResponse = null;
 
 beforeEach(() => {
-  Object.values(spies).map(s => s.resetHistory());
+  Object.values(functionMocks).map(s => s.mockClear());
 });
 
 describe("for kmsClientIdAuthorizer", () => {
@@ -56,39 +52,30 @@ describe("for kmsClientIdAuthorizer", () => {
   });
 
   describe("for getAccessToken()", () => {
-
     let authorizer = null;
     const expectedToken = {};
 
     beforeEach(() => {
       authorizer = new kmsClientIdAuthorizer("abc", "def");
-      authorizer._getNewAccessToken = sinon.spy();
+      authorizer._getNewAccessToken = jest.fn();
       authorizer.authenticator = async () => expectedToken;
-      authorizer.init = sinon.spy();
-    });
-
-    it("initializes the authenticator if needed", async () => {
-      await authorizer.getAccessToken();
-      assert(authorizer.init.called);
-    });
-
-    it("does not initialize the authenticator if not needed", async () => {
-      await authorizer.getAccessToken();
-      assert(!authorizer.init.called);
+      authorizer.init = jest.fn();
     });
 
     it("gets the token from cache if needed", async () => {
-      authorizer.isTokenExpired = () => true;
+      authorizer.token = expectedToken;
+      kmsClientIdAuthorizer.isTokenExpired = () => false;
 
       await authorizer.getAccessToken();
-      assert(!authorizer._getNewAccessToken.called);
+      assert(!authorizer._getNewAccessToken.mock.calls.length);
     });
 
     it("refreshes the token", async () => {
-      authorizer.isTokenExpired = () => false;
+      authorizer.token = expectedToken;
+      kmsClientIdAuthorizer.isTokenExpired = () => true;
 
       await authorizer.getAccessToken();
-      assert(authorizer._getNewAccessToken.called);
+      assert(authorizer._getNewAccessToken.mock.calls.length);
     });
   });
 });
