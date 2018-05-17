@@ -3,7 +3,8 @@
 const CimpressTranslationsWebpackPlugin = require("./src/plugin");
 const KmsClientIdAuthorizer = require("./src/kmsClientIdAuthorizer");
 
-module.exports = {
-  CimpressTranslationsWebpackPlugin,
-  authorizers: { KmsClientIdAuthorizer }
+CimpressTranslationsWebpackPlugin.authorizers = {
+  KmsClientIdAuthorizer
 };
+
+module.exports = CimpressTranslationsWebpackPlugin;
