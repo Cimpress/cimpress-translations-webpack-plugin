@@ -1,7 +1,7 @@
 "use strict";
 
-const CimpressTranslationsWebpackPlugin = require("./src/plugin");
-const KmsClientIdAuthorizer = require("./src/kmsClientIdAuthorizer");
+const CimpressTranslationsWebpackPlugin = require("./plugin");
+const KmsClientIdAuthorizer = require("./kmsClientIdAuthorizer");
 
 CimpressTranslationsWebpackPlugin.authorizers = {
   KmsClientIdAuthorizer
