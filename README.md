@@ -1,6 +1,6 @@
 # cimpress-translations-webpack-client
 
-[![npm version](https://badge.fury.io/js/cimpress-translations-webpack-client.svg)](https://badge.fury.io/js/cimpress-translations-webpack-client)
+[![npm version](https://badge.fury.io/js/cimpress-translations-webpack-plugin.svg)](https://badge.fury.io/js/cimpress-translations-webpack-plugin)
 
 cimpress-translations-webpack-plugin is a Webpack plugin allowing for advanced integration of your software project with Cimpress' Translations service.
 
@@ -30,7 +30,7 @@ In your webpack configuration, add the plugin and configure it to your liking. T
 
 ```
 const CimpressTranslationsWebpackPlugin = require("cimpress-translations-webpack-plugin");
-const authorizers = CimpressTranslationsWebpackPlugin.authorizers; 
+const authorizers = CimpressTranslationsWebpackPlugin.authorizers;
 
 let plugin = new CimpressTranslationsWebpackPlugin({
   serviceId: "280c6549-0845-44d4-99c1-4f664122fcf3",
