@@ -3,6 +3,7 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const winston = require("winston");
+const cors = require("cors");
 
 const LOG_HEADER = "cimpress-translations-webpack-plugin";
 const PORT_NUMBER = 28070;
@@ -28,6 +29,7 @@ class DevServer {
   setupApp() {
     this.app = express();
     this.app.use(bodyParser.json());
+    this.app.use(cors());
     this.app.post("/v1/update", this.update.bind(this));
     this.app.get("/livecheck", this.livecheck.bind(this));
   }
