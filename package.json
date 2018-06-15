@@ -3,6 +3,9 @@
   "version": "1.1.8",
   "description": "Effortless webpack integration with Cimpress Translations Service",
   "main": "./lib/index.js",
+  "files": [
+    "lib"
+  ],
   "scripts": {
     "test": "jest",
     "build": "babel src -d lib",
