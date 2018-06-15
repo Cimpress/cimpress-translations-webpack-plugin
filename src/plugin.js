@@ -36,12 +36,17 @@ class CimpressTranslationsWebpackPlugin {
     this.buildTimeUpdateComplete = false;
     this.mode = null;
     this.devServer = null;
+
+    this.skipDevelopmentUpdate = options.skipDevelopmentUpdate || false;
   }
 
   run(mode, compiler, callback) {
     if (!this.buildTimeUpdateComplete) {
-      this.buildTimeUpdatePromise = this.pluginCore.updateTranslationsFromService();
       this.mode = mode;
+
+      if (mode === modes.build || !this.skipDevelopmentUpdate) {
+        this.buildTimeUpdatePromise = this.pluginCore.updateTranslationsFromService();
+      }
     }
     callback();
   }
@@ -84,9 +89,11 @@ class CimpressTranslationsWebpackPlugin {
     compiler.plugin("run", this.eventRun.bind(this));
     compiler.plugin("watch-run", this.eventRunDev.bind(this));
 
-    compiler.plugin("normal-module-factory", (nmf) => {
-      nmf.plugin("before-resolve", this.eventInterceptResolve.bind(this));
-    });
+    if (!this.skipDevelopmentUpdates) {
+      compiler.plugin("normal-module-factory", (nmf) => {
+        nmf.plugin("before-resolve", this.eventInterceptResolve.bind(this));
+      });
+    }
 
     compiler.plugin("done", this.eventDone.bind(this));
   }

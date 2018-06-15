@@ -21,10 +21,12 @@ const mockDevServer = function() {
   this.start = functionMocks.start;
 };
 
-beforeEach(() => {
+const clearMocks = () => {
   Object.values(functionMocks)
     .map(v => v.mockClear());
-});
+};
+
+beforeEach(clearMocks);
 
 jest.mock("../src/core", () => mockPluginCore);
 jest.mock("../src/devServer", () => mockDevServer);
@@ -80,7 +82,7 @@ describe("for plugin", () => {
       assert(plugin.matchPath(options.path));
     });
 
-    it.only("does not match outside of directory", () => {
+    it("does not match outside of directory", () => {
       let options = {
         path: "/home/cimpress/plugin/src/locale"
       };
@@ -123,7 +125,7 @@ describe("for plugin", () => {
   });
 
   describe("for development flow", () => {
-    it("updates translations during build flow if a language file is required", async () => {
+    it("updates translations during development flow if a language file is required", async () => {
       let options = {
         path: "/home/cimpress/plugin/src/locale"
       };
@@ -134,18 +136,30 @@ describe("for plugin", () => {
       assert(plugin.buildTimeUpdateComplete);
     });
 
-    it("does not update translations during build flow if no language files are required", async () => {
+    it("does not update translations during development flow if no language files are required", async () => {
       let options = {
         path: "/home/cimpress/plugin/src/otherfolder"
       };
       let plugin = new CimpressTranslationsWebpackPlugin(options);
 
-      assert(!plugin.buildTimeUpdateComplete);
+      assert(!functionMocks.start.mock.calls.length);
       await runMockWebpackBuild("watch", plugin);
       assert(!plugin.buildTimeUpdateComplete);
     });
 
-    it("starts a development server", async () => {
+    it("does not update translations during development flow if user specifies to skip the update", async () => {
+      let options = {
+        path: "/home/cimpress/plugin/src/locale",
+        skipDevelopmentUpdate: true
+      };
+      let plugin = new CimpressTranslationsWebpackPlugin(options);
+
+      assert(!plugin.buildTimeUpdatePromise);
+      await runMockWebpackBuild("watch", plugin);
+      assert(!plugin.buildTimeUpdatePromise);
+    });
+
+    it("starts a development server in all cases", async () => {
       let options = {
         path: "/home/cimpress/plugin/src/otherfolder"
       };
@@ -154,6 +168,19 @@ describe("for plugin", () => {
       assert(!functionMocks.start.mock.calls.length);
       await runMockWebpackBuild("watch", plugin);
       assert(functionMocks.start.mock.calls.length);
+
+      clearMocks();
+
+      options = {
+        path: "/home/cimpress/plugin/src/locale",
+        skipDevelopmentUpdate: true
+      };
+      plugin = new CimpressTranslationsWebpackPlugin(options);
+
+      assert(!functionMocks.start.mock.calls.length);
+      await runMockWebpackBuild("watch", plugin);
+      assert(functionMocks.start.mock.calls.length);
+
     });
   });
 });
