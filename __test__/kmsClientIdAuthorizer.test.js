@@ -15,9 +15,6 @@ const functionMocks = {
 const mockAws = {
   KMS: function() {
     this.decrypt = functionMocks.kmsDecrypt;
-  },
-  config: {
-    update: () => {}
   }
 };
 
