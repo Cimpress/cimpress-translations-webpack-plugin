@@ -89,7 +89,7 @@ class CimpressTranslationsWebpackPlugin {
     compiler.plugin("run", this.eventRun.bind(this));
     compiler.plugin("watch-run", this.eventRunDev.bind(this));
 
-    if (!this.skipDevelopmentUpdates) {
+    if (!this.skipDevelopmentUpdate) {
       compiler.plugin("normal-module-factory", (nmf) => {
         nmf.plugin("before-resolve", this.eventInterceptResolve.bind(this));
       });
