@@ -68,7 +68,11 @@ class PluginCore {
       languageBlobs.map(t => {
         all[t.blobId] = t.data;
       });
-      return fs.writeFileSync(this.path, JSON.stringify(all, null, 2));
+
+      fs.writeFileSync(this.path, JSON.stringify(all, null, 2));
+
+      this.logger.info("Saved translations.");
+      return;
     }
   }
 
