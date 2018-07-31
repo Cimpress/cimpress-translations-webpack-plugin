@@ -7,15 +7,19 @@ const jwt = require("jsonwebtoken");
 const Auth0Authenticator = require("./auth0Authenticator");
 
 class kmsClientIdAuthorizer {
-  constructor(clientId, encryptedClientSecret) {
+  constructor(clientId, encryptedClientSecret, defaultRegion = null) {
     this.clientId = clientId;
     this.encryptedClientSecret = encryptedClientSecret;
+    this.defaultRegion = defaultRegion;
 
     this.token = null;
     this.authenticator = null;
   }
 
   async init() {
+    if(this.defaultRegion) {
+      AWS.config.update({ region: this.defaultRegion });
+    }
     let params = { CiphertextBlob: new Buffer(this.encryptedClientSecret, "base64") };
     let data = await KMS.decrypt(params).promise();
 
