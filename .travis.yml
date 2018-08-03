@@ -3,6 +3,7 @@ node_js:
 - '8'
 install:
 - npm i
+- npm i aws-sdk
 script:
 - npm run build
 - npm test

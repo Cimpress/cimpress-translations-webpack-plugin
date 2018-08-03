@@ -9,7 +9,7 @@
   "scripts": {
     "test": "jest",
     "build": "babel src -d lib",
-    "prepublish": "npm run build && npm version patch"
+    "prepublish": "npm run build"
   },
   "repository": {
     "type": "git",
