@@ -2,7 +2,8 @@ language: node_js
 node_js:
 - '8'
 install:
-- npm i
+- npm install -g npm
+- npm ci
 - npm i aws-sdk
 script:
 - npm run build
