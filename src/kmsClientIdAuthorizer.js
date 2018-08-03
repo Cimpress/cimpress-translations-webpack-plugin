@@ -1,7 +1,6 @@
 "use strict";
 
 const AWS = require("aws-sdk");
-const KMS = new AWS.KMS();
 const jwt = require("jsonwebtoken");
 
 const Auth0Authenticator = require("./auth0Authenticator");
@@ -11,17 +10,15 @@ class kmsClientIdAuthorizer {
     this.clientId = clientId;
     this.encryptedClientSecret = encryptedClientSecret;
     this.defaultRegion = defaultRegion;
+    this.KMS = new AWS.KMS(this.defaultRegion ? { region: this.defaultRegion} : {});
 
     this.token = null;
     this.authenticator = null;
   }
 
   async init() {
-    if(this.defaultRegion) {
-      AWS.config.update({ region: this.defaultRegion });
-    }
     let params = { CiphertextBlob: new Buffer(this.encryptedClientSecret, "base64") };
-    let data = await KMS.decrypt(params).promise();
+    let data = await this.KMS.decrypt(params).promise();
 
     this.authenticator = new Auth0Authenticator("cimpress.auth0.com", this.clientId, data.Plaintext.toString());
   }
