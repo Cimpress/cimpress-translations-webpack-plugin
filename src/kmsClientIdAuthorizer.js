@@ -6,11 +6,10 @@ const jwt = require("jsonwebtoken");
 const Auth0Authenticator = require("./auth0Authenticator");
 
 class kmsClientIdAuthorizer {
-  constructor(clientId, encryptedClientSecret, defaultRegion = null) {
+  constructor(clientId, encryptedClientSecret) {
     this.clientId = clientId;
     this.encryptedClientSecret = encryptedClientSecret;
-    this.defaultRegion = defaultRegion;
-    this.KMS = new AWS.KMS(this.defaultRegion ? { region: this.defaultRegion} : {});
+    this.KMS = new AWS.KMS();
 
     this.token = null;
     this.authenticator = null;

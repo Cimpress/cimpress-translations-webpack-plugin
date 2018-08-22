@@ -69,7 +69,7 @@ Built-in authorization modules can be found under CimpressTranslationsWebpackPlu
 
 ##### kmsClientIdAuthorizer(clientId, encryptedClientSecret)
 
-The module uses the Client Credentials Grant authentication flow to obtain a valid access token. An encrypted client secret is stored in your webpack configuration and is decrypted using AWS KMS.
+The module uses the Client Credentials Grant authentication flow to obtain a valid access token. An encrypted client secret is stored in your webpack configuration and is decrypted using AWS KMS.  To configure KMS import `aws-sdk` and set the aws configuration directly. The `aws-sdk` configuration will be reused in this library.
 
 ## Live development
 

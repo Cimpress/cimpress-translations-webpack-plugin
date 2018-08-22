@@ -1,6 +1,6 @@
 {
   "name": "cimpress-translations-webpack-plugin",
-  "version": "1.1.10",
+  "version": "1.1.11",
   "description": "Effortless webpack integration with Cimpress Translations Service",
   "main": "./lib/index.js",
   "files": [
@@ -37,7 +37,6 @@
   },
   "homepage": "https://github.com/Cimpress/cimpress-translations-webpack-plugin#readme",
   "dependencies": {
-    "aws-sdk": "^2.286.2",
     "body-parser": "^1.18.3",
     "cimpress-translations": "^2.0.2",
     "cors": "^2.8.4",
@@ -47,6 +46,7 @@
     "winston": "^3.0.0-rc5"
   },
   "devDependencies": {
+    "aws-sdk": "^2.286.2",
     "babel-cli": "^6.26.0",
     "babel-plugin-transform-runtime": "^6.23.0",
     "babel-polyfill": "^6.26.0",
@@ -55,6 +55,6 @@
     "supertest": "^3.1.0"
   },
   "peerDependencies": {
-    "aws-sdk": "2.x"
+    "aws-sdk": "*"
   }
 }
