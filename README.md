@@ -1,4 +1,4 @@
-# cimpress-translations-webpack-client
+# cimpress-translations-webpack-plugin
 
 [![npm version](https://badge.fury.io/js/cimpress-translations-webpack-plugin.svg)](https://badge.fury.io/js/cimpress-translations-webpack-plugin)
 
