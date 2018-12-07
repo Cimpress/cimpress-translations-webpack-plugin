@@ -35,6 +35,7 @@ const authorizers = CimpressTranslationsWebpackPlugin.authorizers;
 let plugin = new CimpressTranslationsWebpackPlugin({
   serviceId: "280c6549-0845-44d4-99c1-4f664122fcf3",
   languages: ["eng", "fra" ],
+  skipDevelopmentUpdate: false,
   path: path.join(__dirname, "./src/locale"),
   authorizer: new authorizers.KmsClientIdAuthorizer("my-client-id",
     "my-kms-encrypted-client-secret")
@@ -54,6 +55,10 @@ The GUID of your service in Cimpress Translations. If you have not yet set up yo
 ##### languages
 
 A list of languages to install. This parameter is optional; when it isn't supplied, the plugin will fetch a list of all supported languages. Set this parameter to minimize execution time.
+
+##### skipDevelopmentUpdate
+
+A boolean allowing to skip downloading locale files when running webpack in [live development mode](#live-development). This parameter is optional; when it isn't supplied, the plugin will fetch all locale files when live reload is triggered. Set this parameter to avoid locale files download on each source code change. Particularly useful when the locale files are also being watched by the webpack live server which causes infinite reload loop.
 
 ##### path *required*
 
