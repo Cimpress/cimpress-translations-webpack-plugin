@@ -26,6 +26,10 @@ class kmsClientIdAuthorizer {
   }
 
   async getAccessToken() {
+    if (!this.clientIdAuthorizer) {
+      await this.init();
+    }
+
     return this.clientIdAuthorizer.getAccessToken();
   }
 }

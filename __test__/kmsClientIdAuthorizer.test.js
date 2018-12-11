@@ -21,9 +21,6 @@ jest.mock("aws-sdk", () => mockAws);
 
 const kmsClientIdAuthorizer = require(paths.kmsClientIdAuthorizer);
 
-const testKmsDecryptResponse = null;
-const testAuthorizationResponse = null;
-
 beforeEach(() => {
   Object.values(functionMocks).map(s => s.mockClear());
 });
@@ -56,8 +53,7 @@ describe("for kmsClientIdAuthorizer", () => {
 
     beforeEach(() => {
       authorizer = new kmsClientIdAuthorizer("abc", "def");
-      authorizer.clientIdAuthorizer = { getAccessToken: async () => expectedToken };
-      authorizer.init = jest.fn();
+      authorizer.init = () => authorizer.clientIdAuthorizer = { getAccessToken: async () => expectedToken };
     });
 
     it("gets the token using underlying clientIdAuthorizer", async () => {
