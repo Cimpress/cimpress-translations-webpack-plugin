@@ -26,9 +26,28 @@ Include [cimpress-translations-webpack-plugin](https://www.npmjs.com/package/cim
 npm install --save-dev cimpress-translations-webpack-plugin
 ```
 
-In your webpack configuration, add the plugin and configure it to your liking. The example configuration below uses the Client Credentials Grant authentication flow with secrets decrypted using KMS:
-
+In your webpack configuration, add the plugin and configure it to your liking. The examples bellow use the Client Credentials Grant authentication flow.
+##### Example with ClientIdAuthorizer
 ```
+const CimpressTranslationsWebpackPlugin = require("cimpress-translations-webpack-plugin");
+const authorizers = CimpressTranslationsWebpackPlugin.authorizers;
+
+let plugin = new CimpressTranslationsWebpackPlugin({
+  serviceId: "280c6549-0845-44d4-99c1-4f664122fcf3",
+  languages: ["eng", "fra" ],
+  path: path.join(__dirname, "./src/locale"),
+  authorizer: new authorizers.ClientIdAuthorizer("my-client-id",
+    "my-client-secret")
+});
+```
+
+
+##### Example with KmsClientIdAuthorizer
+```
+// configure AWS SDK used by the KmsClientIdAuthorizer
+const aws = require('aws-sdk');
+aws.config.update({ region: 'eu-west-1' });
+
 const CimpressTranslationsWebpackPlugin = require("cimpress-translations-webpack-plugin");
 const authorizers = CimpressTranslationsWebpackPlugin.authorizers;
 
@@ -67,13 +86,13 @@ Any object exposing a synchronous or asynchronous `getAccessToken()` method, whi
 
 Built-in authorization modules can be found under CimpressTranslationsWebpackPlugin.authorizers.
 
-##### kmsClientIdAuthorizer(clientId, encryptedClientSecret)
-
-The module uses the Client Credentials Grant authentication flow to obtain a valid access token. An encrypted client secret is stored in your webpack configuration and is decrypted using AWS KMS.  To configure KMS import `aws-sdk` and set the aws configuration directly. The `aws-sdk` configuration will be reused in this library.
-
 ##### clientIdAuthorizer(clientId, clientSecret)
 
-The module uses the Client Credentials Grant authentication flow to obtain a valid access token. It can be used if you have an unencrypted client secret available.
+The authorizer uses the Client Credentials Grant authentication flow to obtain a valid access token. It can be used if you have an unencrypted client secret available.
+
+##### kmsClientIdAuthorizer(clientId, encryptedClientSecret)
+
+The KMS authorizer can be used if you have a KMS encrypted client secret stored in your webpack configuration. It will be decrypted using AWS KMS. To configure KMS import `aws-sdk` and set the aws configuration directly. The `aws-sdk` configuration will be reused in this library.
 
 ## Live development
 
