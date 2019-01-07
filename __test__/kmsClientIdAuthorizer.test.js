@@ -8,8 +8,7 @@ const paths = {
 };
 
 const functionMocks = {
-  kmsDecrypt: jest.fn(),
-  authorize: jest.fn()
+  kmsDecrypt: jest.fn()
 };
 
 const mockAws = {
@@ -21,9 +20,6 @@ const mockAws = {
 jest.mock("aws-sdk", () => mockAws);
 
 const kmsClientIdAuthorizer = require(paths.kmsClientIdAuthorizer);
-
-const testKmsDecryptResponse = null;
-const testAuthorizationResponse = null;
 
 beforeEach(() => {
   Object.values(functionMocks).map(s => s.mockClear());
@@ -57,25 +53,12 @@ describe("for kmsClientIdAuthorizer", () => {
 
     beforeEach(() => {
       authorizer = new kmsClientIdAuthorizer("abc", "def");
-      authorizer._getNewAccessToken = jest.fn();
-      authorizer.authenticator = async () => expectedToken;
-      authorizer.init = jest.fn();
+      authorizer.init = () => authorizer.clientIdAuthorizer = { getAccessToken: async () => expectedToken };
     });
 
-    it("gets the token from cache if needed", async () => {
-      authorizer.token = expectedToken;
-      kmsClientIdAuthorizer.isTokenExpired = () => false;
-
-      await authorizer.getAccessToken();
-      assert(!authorizer._getNewAccessToken.mock.calls.length);
-    });
-
-    it("refreshes the token", async () => {
-      authorizer.token = expectedToken;
-      kmsClientIdAuthorizer.isTokenExpired = () => true;
-
-      await authorizer.getAccessToken();
-      assert(authorizer._getNewAccessToken.mock.calls.length);
+    it("gets the token using underlying clientIdAuthorizer", async () => {
+      let token = await authorizer.getAccessToken();
+      assert.equal(token, expectedToken);
     });
   });
 });
