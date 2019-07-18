@@ -1,6 +1,6 @@
 {
   "name": "cimpress-translations-webpack-plugin",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Effortless webpack integration with Cimpress Translations Service",
   "main": "./src/index.js",
   "files": [
